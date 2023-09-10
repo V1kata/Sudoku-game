@@ -4,18 +4,32 @@ import { Digits } from "./components/Digits";
 import { BoardTile } from "./components/BoardTile";
 import { Footer } from "./components/Footer";
 import { solveSudoku } from "./utils/solveSudoku";
-import { validateBoard } from "./utils/validateBoard";
 import { DEFAULT_BOARD } from "./config/boards";
+import { Buttons } from "./components/Buttons";
+import { makeDeepCopy } from "./utils/makeDeepCopy";
+import { createSudoku } from "./utils/createSudoku";
 
 function App() {
   const [errors, setError] = useState(0);
-  const [selectedNum, setSelectedNum] = useState(null);
-  const [gameWon, setGameWon] = useState(false);
+  const [selectedDigit, setSelectedDigit] = useState(null);
+  const [gameWon, setGameWon] = useState(0);
   const [solution, setSolution] = useState([]);
-  const [board, setBoard] = useState(DEFAULT_BOARD);
+  const [allBoards, setAllBoards] = useState([]);
+  const [currentBoard, setCurrentBoard] = useState(DEFAULT_BOARD);
+  const [initLoad, setInitLoad] = useState(true);
 
   useEffect(() => {
-    const boardCopy = JSON.parse(JSON.stringify(board));
+    if (initLoad) {
+      return setInitLoad(false);
+    }
+
+    const newBoard = createSudoku(allBoards);
+
+    setCurrentBoard(newBoard);
+  }, [gameWon]);
+
+  useEffect(() => {
+    const boardCopy = makeDeepCopy(currentBoard);
     const fullSolution = solveSudoku(boardCopy);
 
     if (fullSolution === "No solution exists.") {
@@ -24,62 +38,59 @@ function App() {
     }
 
     setSolution(fullSolution);
-  }, []);
+  }, [currentBoard]);
 
-  useEffect(() => {
-    let won = true;
-    for (let x = 0; x < 9; x++) {
-      for (let z = 0; z < 9; z++) {
-        if (board[x][z] === "-") {
-          won = false;
-          return;
-        }
-      }
-    }
-
-    if (won) {
-      setGameWon(true);
-    }
-  }, [board]);
+  useEffect(() => {}, [currentBoard]);
 
   const selectedNumberHandler = (e) => {
     const target = e.target;
 
-    if (selectedNum != null) {
-      selectedNum.classList.remove("number-selected");
-      setSelectedNum(null);
+    if (selectedDigit != null) {
+      selectedDigit.classList.remove("number-selected");
+      setSelectedDigit(null);
     }
 
     target.classList.add("number-selected");
-    setSelectedNum(target);
+    setSelectedDigit(target);
   };
 
   const selectedTileHandler = (e) => {
     const [x, y] = e.target.getAttribute("cords").split("-");
 
-    if (!selectedNum) return;
+    if (!selectedDigit) return;
+    const selectedNum = Number(selectedDigit.textContent);
 
-    if (selectedNum.textContent === solution[x][y]) {
-      const copy = board[x].slice();
-      copy.splice(y, 1, selectedNum.textContent);
-      board[x] = copy.join("");
-      setBoard([...board]);
+    if (selectedNum === solution[x][y]) {
+      const copy = currentBoard[x].slice();
+      copy.splice(y, 1, selectedNum);
+      currentBoard[x] = copy;
+      setCurrentBoard([...currentBoard]);
     } else {
       setError((state) => (state += 1));
     }
   };
 
   const solveSudokuHandler = () => {
-    setBoard([...solution]);
+    setCurrentBoard([...solution]);
   };
 
-  const onEndHandler = () => {
-    console.log(validateBoard(board));
-    if (!validateBoard(board)) {
-      return false;
+  const nextGameHandler = () => {
+    let won = true;
+    for (let x = 0; x < 9; x++) {
+      for (let z = 0; z < 9; z++) {
+        if (currentBoard[x][z] === "-") {
+          won = false;
+          return console.log('Not done yet, keep trying!');
+        }
+      }
     }
 
-    console.log("Congratulations");
+    if (won) {
+      setGameWon((state) => (state += 1));
+    }
+
+    console.log("Congratulations, you win!");
+    setAllBoards((state) => [...state, solution]);
   };
 
   return (
@@ -89,7 +100,7 @@ function App() {
       <h2 id="errors">Errors: {errors}</h2>
 
       <div id="board">
-        {board.map((row, i) =>
+        {currentBoard.map((row, i) =>
           Array.from(row).map((num, y) => {
             let classList = "tile";
 
@@ -130,12 +141,7 @@ function App() {
           )}
       </div>
 
-      <div className="btn-wrapper">
-        <button className="btns solve" onClick={solveSudokuHandler}>
-          Solve
-        </button>
-        <button className="btns btn-nextGame" onClick={onEndHandler}>Next game</button>
-      </div>
+      <Buttons solveSudoku={solveSudokuHandler} nextGame={nextGameHandler} />
 
       <Footer />
     </div>
