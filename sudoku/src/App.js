@@ -69,11 +69,12 @@ function App() {
       setError((state) => (state += 1));
     }
   };
-
+  
   const solveSudokuHandler = () => {
     setCurrentBoard([...solution]);
+    // setAllBoards((state) => [...state, solution]);
   };
-
+  
   const nextGameHandler = () => {
     let won = true;
     for (let x = 0; x < 9; x++) {
@@ -90,7 +91,6 @@ function App() {
     }
 
     console.log("Congratulations, you win!");
-    setAllBoards((state) => [...state, solution]);
   };
 
   return (
