@@ -5,33 +5,24 @@ import { BoardTile } from "./components/BoardTile";
 import { Footer } from "./components/Footer";
 import { solveSudoku } from "./utils/solveSudoku";
 import { validateBoard } from "./utils/validateBoard";
+import { DEFAULT_BOARD } from "./config/boards";
 
 function App() {
   const [errors, setError] = useState(0);
   const [selectedNum, setSelectedNum] = useState(null);
   const [gameWon, setGameWon] = useState(false);
   const [solution, setSolution] = useState([]);
-  const [board, setBoard] = useState([
-    ["-", "-", 7, 4, 9, 1, 6, "-", 5],
-    [2, "-", "-", "-", 6, "-", 3, "-", 9],
-    ["-", "-", "-", "-", "-", 7, "-", 1, "-"],
-    ["-", 5, 8, 6, "-", "-", "-", "-", 4],
-    ["-", "-", 3, "-", "-", "-", "-", 9, "-"],
-    ["-", "-", 6, 2, "-", "-", 1, 8, 7],
-    [9, "-", 4, "-", 7, "-", "-", "-", 2],
-    [6, 7, "-", 8, 3, "-", "-", "-", "-"],
-    [8, 1, "-", "-", 4, 5, "-", "-", "-"],
-  ]);
+  const [board, setBoard] = useState(DEFAULT_BOARD);
 
   useEffect(() => {
-    const boardCopy = JSON.parse(JSON.stringify(board))
+    const boardCopy = JSON.parse(JSON.stringify(board));
     const fullSolution = solveSudoku(boardCopy);
 
-    if (fullSolution[0] === "N" && fullSolution[1] === "o") {
+    if (fullSolution === "No solution exists.") {
       console.log("Unsolvable");
       return;
     }
-    
+
     setSolution(fullSolution);
   }, []);
 
@@ -80,16 +71,16 @@ function App() {
 
   const solveSudokuHandler = () => {
     setBoard([...solution]);
-  }
+  };
 
   const onEndHandler = () => {
-    console.log(validateBoard(board))
+    console.log(validateBoard(board));
     if (!validateBoard(board)) {
-      return false
+      return false;
     }
 
-    console.log('Congratulations')
-  }
+    console.log("Congratulations");
+  };
 
   return (
     <div className="wrapper">
@@ -139,8 +130,12 @@ function App() {
           )}
       </div>
 
-      <button className="solve" onClick={solveSudokuHandler}>Solve</button>
-      <button onClick={onEndHandler}>End</button>
+      <div className="btn-wrapper">
+        <button className="btns solve" onClick={solveSudokuHandler}>
+          Solve
+        </button>
+        <button className="btns btn-nextGame" onClick={onEndHandler}>Next game</button>
+      </div>
 
       <Footer />
     </div>
