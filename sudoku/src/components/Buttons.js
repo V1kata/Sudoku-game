@@ -5,7 +5,7 @@ export function Buttons({ solveSudoku, nextGame }) {
         Solve
       </button>
       <button className="btns btn-nextGame" onClick={nextGame}>
-        Next game
+        End game
       </button>
     </div>
   );
