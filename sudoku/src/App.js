@@ -8,11 +8,13 @@ import { DEFAULT_BOARD } from "./config/boards";
 import { Buttons } from "./components/Buttons";
 import { makeDeepCopy } from "./utils/makeDeepCopy";
 import { createSudoku } from "./utils/createSudoku";
+import { WinScreen } from "./components/WinScreen";
 
 function App() {
   const [errors, setError] = useState(0);
   const [selectedDigit, setSelectedDigit] = useState(null);
   const [gameWon, setGameWon] = useState(0);
+  const [winScreen, setWinScreen] = useState({ show: false, msg: "" });
   const [solution, setSolution] = useState([]);
   const [allBoards, setAllBoards] = useState([]);
   const [currentBoard, setCurrentBoard] = useState(DEFAULT_BOARD);
@@ -69,28 +71,36 @@ function App() {
       setError((state) => (state += 1));
     }
   };
-  
+
   const solveSudokuHandler = () => {
     setCurrentBoard([...solution]);
-    // setAllBoards((state) => [...state, solution]);
   };
-  
+
   const nextGameHandler = () => {
+    setWinScreen({ show: false, msg: "" });
+    // setTimeout(() => {
+      //   setWinScreen({ show: false, msg: "" });
+    // }, 1500);
+  };
+
+  const endGameHandler = () => {
     let won = true;
     for (let x = 0; x < 9; x++) {
       for (let z = 0; z < 9; z++) {
         if (currentBoard[x][z] === "-") {
           won = false;
-          return console.log('Not done yet, keep trying!');
+          return console.log("Not done yet, keep trying!");
         }
       }
     }
-
+    
     if (won) {
+      setWinScreen({ show: true, msg: "You win!" });
       setGameWon((state) => (state += 1));
     }
-
+    
     console.log("Congratulations, you win!");
+    setAllBoards((state) => [...state, solution]);
   };
 
   return (
@@ -98,6 +108,8 @@ function App() {
       <h1>Sudoku</h1>
       <hr />
       <h2 id="errors">Errors: {errors}</h2>
+
+      {winScreen.show && <WinScreen message={winScreen.msg} nextGame={nextGameHandler}/>}
 
       <div id="board">
         {currentBoard.map((row, i) =>
@@ -134,14 +146,18 @@ function App() {
           .fill(0)
           .map((smth, i) =>
             i !== 0 ? (
-              <Digits key={i} num={i} selectedNum={selectedNumberHandler} />
+              <Digits
+                key={i}
+                num={i}
+                selectedNum={selectedNumberHandler}
+              />
             ) : (
               ""
             )
           )}
       </div>
 
-      <Buttons solveSudoku={solveSudokuHandler} nextGame={nextGameHandler} />
+      <Buttons solveSudoku={solveSudokuHandler} nextGame={endGameHandler} />
 
       <Footer />
     </div>

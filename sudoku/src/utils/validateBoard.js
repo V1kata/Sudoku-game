@@ -8,9 +8,11 @@ export function validateBoard(board) {
 
     for (let y = 0; y < 9; y++) {
       const rowNumber = row[y];
-      const columnNumber = row[y][x];
+      const columnNumber = board[y][x];
       const boxNumber =
-        row[3 * Math.floor(x / 3) + Math.floor(y / 3)][((x * 3) % 9) + (y % 3)];
+        board[3 * Math.floor(x / 3) + Math.floor(y / 3)][
+          ((x * 3) % 9) + (y % 3)
+        ];
 
       if (rowNumber !== "-") {
         if (rowSet.has(rowNumber)) return false;
