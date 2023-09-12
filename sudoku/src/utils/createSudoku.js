@@ -16,7 +16,6 @@ export function createSudoku(allBoards) {
       newBoard = modifyBoard(newBoard);
       i = -1;
     }
-    console.log(solvedBoard);
   }
 
   return makeWhiteSpaces(newBoard);
@@ -35,7 +34,6 @@ function modifyBoard(board) {
         const boardCopy = makeDeepCopy(board);
         boardCopy[x][y] = num;
         if (validateBoard(boardCopy)) {
-          console.log(boardCopy);
           board = boardCopy;
           num = generateRandomNumber(9, 1);
         }
