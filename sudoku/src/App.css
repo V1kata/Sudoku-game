@@ -38,6 +38,8 @@ hr {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  transition: all 0.3s ease-in-out;
 }
 
 #digits {
@@ -66,7 +68,7 @@ hr {
   background-color: gray;
 }
 
-.tile-start {
+.solved-tile {
   background-color: whitesmoke;
 }
 
@@ -76,6 +78,11 @@ hr {
 
 .vertical-line {
   border-right: 1px solid black;
+}
+
+.solved {
+  background-color: lightgreen;
+  transition: all 0.2s ease-in-out;
 }
 
 .btn-wrapper {
@@ -109,7 +116,7 @@ footer {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.801); /* Semi-transparent black */
+  background-color: rgba(0, 0, 0, 0.801);
   display: flex;
   justify-content: center;
   align-items: center;

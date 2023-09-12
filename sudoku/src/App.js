@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState, useEffect } from "react";
-import { Digits } from "./components/Digits";
-import { BoardTile } from "./components/BoardTile";
+import { GameBoard } from "./components/board/GameBoard";
+import { DigitsRow } from "./components/digits/DigitsRow";
 import { Footer } from "./components/Footer";
 import { solveSudoku } from "./utils/solveSudoku";
 import { DEFAULT_BOARD } from "./config/boards";
@@ -9,16 +9,28 @@ import { Buttons } from "./components/Buttons";
 import { makeDeepCopy } from "./utils/makeDeepCopy";
 import { createSudoku } from "./utils/createSudoku";
 import { WinScreen } from "./components/WinScreen";
+import { ErrorDisplay } from "./components/ErrorDisplay";
+import { useSelectedDigit } from "./hooks/useSelectedDigit";
+import { useEndGame } from "./hooks/useEndGame";
 
 function App() {
   const [errors, setError] = useState(0);
-  const [selectedDigit, setSelectedDigit] = useState(null);
   const [gameWon, setGameWon] = useState(0);
+  const [isSolving, setIsSolving] = useState(false);
   const [winScreen, setWinScreen] = useState({ show: false, msg: "" });
   const [solution, setSolution] = useState([]);
+  const [solvedNumbers, setSolvedNumbers] = useState([]);
   const [allBoards, setAllBoards] = useState([]);
   const [currentBoard, setCurrentBoard] = useState(DEFAULT_BOARD);
   const [initLoad, setInitLoad] = useState(true);
+  const { selectedDigit, handleSelectedDigit } = useSelectedDigit();
+  const { handleEndGame } = useEndGame(
+    currentBoard,
+    solution,
+    setWinScreen,
+    setGameWon,
+    setAllBoards
+  );
 
   useEffect(() => {
     if (initLoad) {
@@ -42,21 +54,7 @@ function App() {
     setSolution(fullSolution);
   }, [currentBoard]);
 
-  useEffect(() => {}, [currentBoard]);
-
-  const selectedNumberHandler = (e) => {
-    const target = e.target;
-
-    if (selectedDigit != null) {
-      selectedDigit.classList.remove("number-selected");
-      setSelectedDigit(null);
-    }
-
-    target.classList.add("number-selected");
-    setSelectedDigit(target);
-  };
-
-  const selectedTileHandler = (e) => {
+  const handleSelectedTile = (e) => {
     const [x, y] = e.target.getAttribute("cords").split("-");
 
     if (!selectedDigit) return;
@@ -68,97 +66,55 @@ function App() {
       currentBoard[x] = copy;
       setCurrentBoard([...currentBoard]);
     } else {
+      if (currentBoard[x][y] !== "-") {
+        return;
+      }
       setError((state) => (state += 1));
     }
   };
 
-  const solveSudokuHandler = () => {
-    setCurrentBoard([...solution]);
-  };
-
-  const nextGameHandler = () => {
-    setWinScreen({ show: false, msg: "" });
-    // setTimeout(() => {
-      //   setWinScreen({ show: false, msg: "" });
-    // }, 1500);
-  };
-
-  const endGameHandler = () => {
-    let won = true;
+  const handleSolveSudoku = async () => {
+    setIsSolving(true);
     for (let x = 0; x < 9; x++) {
-      for (let z = 0; z < 9; z++) {
-        if (currentBoard[x][z] === "-") {
-          won = false;
-          return console.log("Not done yet, keep trying!");
+      for (let y = 0; y < 9; y++) {
+        if (currentBoard[x][y] !== "-") {
+          continue;
         }
+        await new Promise((resolve) => setTimeout(resolve, 80))
+
+        currentBoard[x][y] = solution[x][y];
+        setCurrentBoard([...currentBoard]);
+
+        setSolvedNumbers(state => [...state, [x, y]]);
       }
     }
-    
-    if (won) {
-      setWinScreen({ show: true, msg: "You win!" });
-      setGameWon((state) => (state += 1));
-    }
-    
-    console.log("Congratulations, you win!");
-    setAllBoards((state) => [...state, solution]);
+
+    setIsSolving(false);
+    setWinScreen(state => ({...state, msg: 'Why are you cheating'}));
+  };
+
+  const handleNextGame = () => {
+    setWinScreen({ show: false, msg: "" });
   };
 
   return (
     <div className="wrapper">
       <h1>Sudoku</h1>
       <hr />
-      <h2 id="errors">Errors: {errors}</h2>
+      <ErrorDisplay errors={errors} />
 
-      {winScreen.show && <WinScreen message={winScreen.msg} nextGame={nextGameHandler}/>}
+      {winScreen.show && (
+        <WinScreen message={winScreen.msg} nextGame={handleNextGame} />
+      )}
 
-      <div id="board">
-        {currentBoard.map((row, i) =>
-          Array.from(row).map((num, y) => {
-            let classList = "tile";
-
-            if (row[y] !== "-") {
-              classList += " tile-start";
-            }
-
-            if (i === 2 || i === 5) {
-              classList += " horizontal-line";
-            }
-
-            if (y === 2 || y === 5) {
-              classList += " vertical-line";
-            }
-
-            return (
-              <BoardTile
-                key={`${i}${y}`}
-                classList={classList}
-                number={num}
-                cords={`${i}-${y}`}
-                tileSelect={selectedTileHandler}
-              />
-            );
-          })
-        )}
-      </div>
-      <br />
-      <div id="digits">
-        {Array(10)
-          .fill(0)
-          .map((smth, i) =>
-            i !== 0 ? (
-              <Digits
-                key={i}
-                num={i}
-                selectedNum={selectedNumberHandler}
-              />
-            ) : (
-              ""
-            )
-          )}
-      </div>
-
-      <Buttons solveSudoku={solveSudokuHandler} nextGame={endGameHandler} />
-
+      <GameBoard
+        board={currentBoard}
+        handleSelectedTile={handleSelectedTile}
+        isSolving={isSolving}
+        solvedNumbers={solvedNumbers}
+      />
+      <DigitsRow handleSelectedDigit={handleSelectedDigit} />
+      <Buttons solveSudoku={handleSolveSudoku} nextGame={handleEndGame} />
       <Footer />
     </div>
   );
