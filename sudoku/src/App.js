@@ -39,6 +39,7 @@ function App() {
 
     const newBoard = createSudoku(allBoards);
 
+    setSolvedNumbers([]);
     setCurrentBoard(newBoard);
   }, [gameWon]);
 
