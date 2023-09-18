@@ -127,3 +127,44 @@ footer {
   font-size: 25px;
   color: coral;
 }
+
+@media (max-width: 500px) {
+  hr {
+    width: 70%;
+  }
+
+  #board {
+    width: 400px;
+    height: 400px;
+    align-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tile {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+    margin: 0;
+    padding: 0;
+  }
+
+  #digits {
+    width: auto;
+    margin: auto 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .btns {
+    width: auto;
+    height: 40px;
+  }
+
+
+  footer {
+    margin-top: 30px;
+    padding-top: 0;
+  }
+}
